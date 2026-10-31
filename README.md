@@ -215,4 +215,5 @@ The bundled sample video (`sample_data/sample_lecture_python.mp4`) presents a 30
 2. **Whisper Tiny Quantization**: On synthetic text-to-speech audio, Whisper `tiny` may transcribe `"sum"` as `"some"`. On human voice, accuracy is significantly higher.
 #   T e a c h C h e c k - A I  
  #   T e a c h C h e c k - A I  
+ #   T e a c h C h e c k - A I  
  
