@@ -213,3 +213,5 @@ The bundled sample video (`sample_data/sample_lecture_python.mp4`) presents a 30
 
 1. **Gemma 4 Multimodal Inference Latency**: Multimodal reasoning over 6 high-resolution frames via `gemma-4-26b-a4b-it` takes 60–120 seconds depending on Google API queue load. *(The 1-click Demo Mode is provided for instantaneous judging without API quota).*
 2. **Whisper Tiny Quantization**: On synthetic text-to-speech audio, Whisper `tiny` may transcribe `"sum"` as `"some"`. On human voice, accuracy is significantly higher.
+#   T e a c h C h e c k - A I  
+ 
