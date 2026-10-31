@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TeachCheck AI | Educational Video Consistency Checker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-box">
+          <span class="logo-icon">🎯</span>
+          <div>
+            <h2 class="logo-title">TeachCheck AI</h2>
+            <span class="logo-sub">Cloudways Velocity</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="engine-card">
+          <div class="engine-badge">REASONING ENGINE</div>
+          <div class="engine-title">Google Gemma 4</div>
+          <div class="engine-model"><code>gemma-4-26b-a4b-it</code></div>
+          <div class="engine-desc">via Google Gen AI REST API</div>
+        </div>
+
+        <div id="apiStatusCard" class="api-status-card api-status-checking">
+          <span class="status-indicator"></span>
+          <div>
+            <div class="api-status-title">Checking Server Key...</div>
+            <div class="api-status-desc">Server environment</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-heading">🎯 Operation Mode</h3>
+        <div class="mode-selector">
+          <label class="mode-option" id="modeOptionLive">
+            <input type="radio" name="operationMode" value="live" checked>
+            <div class="mode-option-content">
+              <span class="mode-name">🚀 Live Gemma 4 Analysis</span>
+              <span class="mode-desc">Server queries real Gemma 4 model</span>
+            </div>
+          </label>
+          <label class="mode-option" id="modeOptionDemo">
+            <input type="radio" name="operationMode" value="demo">
+            <div class="mode-option-content">
+              <span class="mode-name">🧪 Demo Mode (Benchmark)</span>
+              <span class="mode-desc">Curated findings, zero API latency</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-heading">🎬 Quick Demo</h3>
+        <p class="sidebar-text">Load the bundled 30s Python lecture with speech-to-code mismatch (.append vs .add):</p>
+        <button id="btnLoadSample" class="btn btn-secondary w-full">📁 Load Sample Lecture Video</button>
+      </div>
+
+      <div class="sidebar-footer">
+        <button id="btnResetApp" class="btn btn-outline w-full">🔄 Reset Application</button>
+        <div class="sidebar-credits">TeachCheck AI v1.0 • Cloudways Velocity Stack<br>FastAPI + Faster-Whisper + Gemma 4</div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Hero Banner -->
+      <section class="hero-banner">
+        <h1 class="hero-title">🎯 TeachCheck AI</h1>
+        <p class="hero-tagline">"Don't just watch the lesson. Verify what it teaches."</p>
+        <p class="hero-description">
+          TeachCheck AI is an automated video consistency checker for educational programming lectures.
+          It cross-references <b>what the instructor says</b> against <b>what code appears on screen</b> and <b>what the code actually executes</b> to catch teaching bugs before students get confused.
+        </p>
+      </section>
+
+      <!-- Demo Alert Banner -->
+      <div id="demoModeBanner" class="alert-box alert-demo hidden">
+        <span class="alert-icon">🧪</span>
+        <div>
+          <b>DEMO BENCHMARK MODE ACTIVE</b>: Results will display the verified Python lecture benchmark (.append vs .add) instantly without consuming API quota. Switch to <b>Live Gemma 4 Analysis</b> in the sidebar for live model reasoning.
+        </div>
+      </div>
+
+      <!-- Step 1: Video Upload & Preview -->
+      <section class="card-section">
+        <h2 class="section-title"><span>1</span> Video Selection & Preview</h2>
+        <div class="grid-2col">
+          <!-- Upload Area -->
+          <div class="upload-container">
+            <div id="dropZone" class="drop-zone">
+              <div class="drop-icon">📹</div>
+              <p class="drop-title">Drag & drop your lecture video here</p>
+              <p class="drop-sub">Supports MP4, MOV, AVI (up to 200 MB)</p>
+              <input type="file" id="videoFileInput" accept=".mp4,.mov,.avi" class="file-input-hidden">
+              <button type="button" id="btnBrowseFile" class="btn btn-secondary btn-sm">Browse Local File</button>
+            </div>
+            <div id="fileInfoBox" class="file-info-box hidden">
+              <div>
+                <span class="file-info-name" id="fileInfoName">lecture.mp4</span>
+                <span class="file-info-size" id="fileInfoSize">0.0 MB</span>
+              </div>
+              <button id="btnRemoveFile" class="btn-icon" title="Remove video">✕</button>
+            </div>
+          </div>
+
+          <!-- Video Preview Area -->
+          <div class="preview-container">
+            <div id="previewPlaceholder" class="preview-placeholder">
+              <div class="placeholder-icon">🎬</div>
+              <p>No video selected yet.<br>Upload a file or click <b>"Load Sample Lecture Video"</b> in the sidebar.</p>
+            </div>
+            <video id="videoPlayer" class="video-player hidden" controls playsinline></video>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 2: Analysis Action & Progress -->
+      <section class="card-section">
+        <h2 class="section-title"><span>2</span> Run Consistency Verification</h2>
+        <div class="analysis-controls">
+          <button id="btnAnalyze" class="btn btn-primary btn-lg" disabled>
+            <span class="btn-icon-spin hidden" id="spinIcon">⏳</span>
+            <span id="btnAnalyzeText">🔍 Analyze Lecture Consistency</span>
+          </button>
+          <span class="control-caption" id="controlCaption">Select or load a lecture video above to begin cross-modal analysis.</span>
+        </div>
+
+        <!-- Progress Tracker -->
+        <div id="progressTracker" class="progress-tracker hidden">
+          <div class="progress-bar-bg">
+            <div id="progressBarFill" class="progress-bar-fill" style="width: 0%;"></div>
+          </div>
+          <div class="progress-status" id="progressStatusText">Initializing TeachCheck AI pipeline...</div>
+          <div class="progress-steps">
+            <div class="step-badge" id="stepBadge1">1. Video Validation</div>
+            <div class="step-badge" id="stepBadge2">2. OpenCV Frames</div>
+            <div class="step-badge" id="stepBadge3">3. Whisper Audio</div>
+            <div class="step-badge" id="stepBadge4">4. Gemma 4 Reasoning</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 3: Extracted Lecture Context (Tabs) -->
+      <section id="contextSection" class="card-section hidden">
+        <h2 class="section-title"><span>3</span> Extracted Lecture Context</h2>
+        <div class="tabs-header">
+          <button class="tab-btn active" data-tab="tabFrames">🖼️ Representative Frames (<span id="frameCount">0</span>)</button>
+          <button class="tab-btn" data-tab="tabTranscript">📝 Timestamped Transcript</button>
+        </div>
+        <div class="tabs-content">
+          <div id="tabFrames" class="tab-panel active">
+            <div id="framesGrid" class="frames-grid"></div>
+          </div>
+          <div id="tabTranscript" class="tab-panel">
+            <div id="transcriptList" class="transcript-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 4: Consistency Dashboard -->
+      <section id="resultsSection" class="card-section hidden">
+        <h2 class="section-title"><span>4</span> Consistency Verification Dashboard</h2>
+
+        <!-- Scope Disclaimer -->
+        <div class="alert-box alert-disclaimer">
+          ⚠️ <b>Representative Frame Scope</b>: Analysis is based on representative frames sampled at ~5-second intervals. Verified moments confirm consistency for observed frames, not un-sampled footage.
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-value color-danger" id="metricTotalIssues">0</div>
+            <div class="metric-label">Total Issues</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value color-danger-solid" id="metricConfirmed">0</div>
+            <div class="metric-label">Confirmed Errors</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value color-warning" id="metricPotential">0</div>
+            <div class="metric-label">Potential Mismatches</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value color-success" id="metricVerified">0</div>
+            <div class="metric-label">Verified Sections</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value color-muted" id="metricInsufficient">0</div>
+            <div class="metric-label">Insufficient Evidence</div>
+          </div>
+        </div>
+
+        <!-- AI Summary Card -->
+        <div class="summary-card">
+          <div class="summary-header">
+            <span class="summary-title">AI Consistency Summary</span>
+            <span id="summaryBadge" class="badge badge-verified">GEMMA 4 VERIFIED</span>
+          </div>
+          <p id="summaryText" class="summary-text"></p>
+        </div>
+
+        <!-- Finding Cards List -->
+        <h3 class="subsection-title">🔍 Timestamped Cross-Modal Findings</h3>
+        <div id="findingsContainer" class="findings-container"></div>
+
+        <!-- Step 5: Export Report -->
+        <div class="export-box">
+          <div>
+            <h3 class="export-title">📥 Export Consistency Report</h3>
+            <p class="export-desc">Download complete structured verification data with transcript, metadata, and findings in JSON format.</p>
+          </div>
+          <button id="btnDownloadJson" class="btn btn-secondary btn-lg">📥 Download JSON Report</button>
+        </div>
+
+        <!-- Raw JSON Inspector -->
+        <details class="json-inspector">
+          <summary>🛠️ Inspect Raw Report Payload</summary>
+          <pre><code id="jsonRawView"></code></pre>
+        </details>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
+
